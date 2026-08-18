@@ -34,11 +34,19 @@ DARA는 "챗봇 하나"가 아니라 **디자인 시스템 스킬(지식) + 워�
 
 원칙 — **방향 고르고 시안 만드는 단계 = Cowork, 실제 코드 만지고 커밋하는 단계 = Claude Code.** 세션은 이어지지 않아도 결정이 **`tokens.md`·Skill·목업 파일**에 남아 파일로 이어집니다(단일 진실의 원천 = `tokens.md`).
 
-| Case | 주 사용 툴 | Cowork로 넘어가는 시점 |
-|---|---|---|
-| **A 신규** | Cowork(인테이크·갤러리·목업·토큰) → 확정 후 Code(구현) | 처음부터 Cowork |
-| **B 레거시** | Code(추출·오버레이·커밋) | 의도적 리스타일/리브랜딩일 때만 "방향 결정" 구간 |
-| **C 시스템+신규** | Code(구현·커밋) | 별도 시안 비교가 필요할 때만 |
+| Case | 단계 | 툴 | 추천 모델 |
+|---|---|---|---|
+| **A 신규** | 인테이크 · 갤러리 방향 선택 | Cowork | Sonnet |
+| | 핵심 화면 목업 | Cowork | Sonnet (최종 품질 결정 시 Opus) |
+| | 토큰 시드 | Cowork | Sonnet (기계적이면 Haiku) |
+| | 앱 구현 | Code | Sonnet (복잡 아키텍처 Opus) |
+| **B 레거시** | (선택) 리스타일 방향 | Cowork | Sonnet |
+| | 추출·정규화 `dara-extract` | Code | Sonnet (대형·난전 Opus) |
+| | 오버레이 적용 `dara-apply-legacy` | Code | Sonnet (specificity/hover 디버깅만 Opus) |
+| | 리뷰 `dara-review` | Code | Sonnet (고위험 최종 Opus) |
+| **C 시스템+신규** | plan-review · build · review | Code | Sonnet (복잡 화면·최종 리뷰만 Opus) |
+
+모델 원칙: 기본 **Sonnet**, **Opus는 품질·난이도가 결정적인 단계만**, **Haiku는 기계적 보조만**.
 
 - 정리/비일관성 수정만이면(새 룩 아님) 툴 전환 없이 **Code만**.
 - Cowork 산출물(`tokens.md`·목업)은 **대상 레포에 저장** → 시안 확정 후 Code에서 오버레이 적용(B: `dara-apply-legacy`) → 검증 → 커밋.

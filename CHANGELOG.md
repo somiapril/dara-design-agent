@@ -7,6 +7,7 @@
 ### 문서
 - SKILL.md에 **STEP 4 — 툴 선택 & 전환 시점(Cowork ↔ Claude Code)** 추가. 케이스별 주 사용 툴, Cowork로 넘어가는 시점, `tokens.md` 기준 핸드오프 규칙 명시.
 - README에 "어느 툴로?" 섹션 추가.
+- STEP 4 표를 **단계별 툴 + 추천 모델**로 확장 (기본 Sonnet · Opus는 품질/난이도 결정 단계만 · Haiku는 기계적 보조).
 
 ## [1.0.0] - 2026
 
