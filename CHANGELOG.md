@@ -8,6 +8,7 @@
 - SKILL.md에 **STEP 4 — 툴 선택 & 전환 시점(Cowork ↔ Claude Code)** 추가. 케이스별 주 사용 툴, Cowork로 넘어가는 시점, `tokens.md` 기준 핸드오프 규칙 명시.
 - README에 "어느 툴로?" 섹션 추가.
 - STEP 4 표를 **단계별 툴 + 추천 모델**로 확장 (기본 Sonnet · Opus는 품질/난이도 결정 단계만 · Haiku는 기계적 보조).
+- README 설치 안내 명확화: `.claude/skills/dara/`는 **대상 프로젝트 레포**(또는 홈 `~`)에 설치. 전역 설치 옵션 추가, `AGENTS.md` 병합은 Codex용임을 명시.
 
 ## [1.0.0] - 2026
 

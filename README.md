@@ -13,14 +13,32 @@ DARA는 "챗봇 하나"가 아니라 **디자인 시스템 스킬(지식) + 워�
 
 ## 설치
 
-**Claude Cowork:**
-[Releases](../../releases)에서 `dara.skill`을 내려받아 스킬로 저장 → 이후 `/dara`.
+> **중요:** 이 저장소(`dara-design-agent`)는 스킬의 **원본 창고**입니다. DARA를 실제로 쓰려면 이 파일들을 **DARA로 작업할 대상(당신의 서비스 코드베이스) 프로젝트**에 설치합니다. 이 저장소 자체를 고치는 게 아닙니다.
 
-**Claude Code / 저장소에 직접:**
-이 저장소를 클론(또는 다운로드)해 폴더를 프로젝트의 `.claude/skills/dara/`에 복사 → `/dara`.
+**A. Claude Cowork:**
+[Releases](../../releases)에서 `dara.skill`을 내려받아 스킬로 저장 → 이후 아무 대화에서 `/dara`.
 
-**Codex (GPT):**
-`AGENTS.md` 내용을 저장소 루트 `AGENTS.md`에 병합하면 Codex가 규칙을 참조합니다. (스킬 자동 로드·화면 렌더는 Claude 쪽이 매끄럽습니다.)
+**B. Claude Code — 특정 프로젝트에만:**
+DARA로 작업할 **대상 프로젝트 레포 루트**에 `.claude/skills/dara/`를 만들고 이 파일들을 복사합니다.
+```bash
+# 예: 대상 프로젝트가 ~/IdeaProjects/my-service 인 경우
+mkdir -p ~/IdeaProjects/my-service/.claude/skills/dara
+rsync -a --exclude '.git' <이_저장소>/ ~/IdeaProjects/my-service/.claude/skills/dara/
+# 결과: my-service/.claude/skills/dara/SKILL.md ...
+```
+그 프로젝트에서 Claude Code를 켜면 `/dara`가 인식됩니다.
+
+**C. Claude Code — 내 모든 프로젝트에서:**
+프로젝트별 대신 **개인 전역 위치** `~/.claude/skills/dara/`에 두면 어느 레포에서든 `/dara`가 뜹니다.
+```bash
+mkdir -p ~/.claude/skills/dara
+rsync -a --exclude '.git' <이_저장소>/ ~/.claude/skills/dara/
+```
+
+**D. Codex (GPT) — 선택:**
+Codex도 같이 쓸 때만, **대상 프로젝트 레포 루트의 `AGENTS.md`**(스킬 폴더 안이 아님)에 이 저장소의 `AGENTS.md` 내용을 병합합니다. 순수 Claude Code/Cowork만 쓰면 이 단계는 불필요합니다.
+
+> 요약: `.claude/skills/dara/`의 `.claude`는 **"고칠 서비스 프로젝트"의 루트**(또는 홈 `~`)에 생깁니다. 스킬 자동 로드·화면 렌더는 Claude 쪽이 가장 매끄럽습니다.
 
 ## 3가지 케이스
 
