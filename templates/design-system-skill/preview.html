@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>{서비스명} 디자인 시스템 프리뷰</title>
+
+<!-- ⚠️ 규칙: 이 파일에 스타일을 직접 작성하지 마세요.
+     반드시 서비스의 "실제" 공통 CSS를 링크합니다. 복사본을 만들면
+     실제 코드와 프리뷰가 서서히 어긋나는(drift) 문제가 생깁니다.
+     이 파일은 SSR 스택(JSP/Jinja/PHP 등) 전용입니다.
+     React/Vue 프로젝트는 이 파일 대신 앱 내 /_design/preview 라우트에서
+     실제 컴포넌트를 import해 렌더링하세요. -->
+<link rel="stylesheet" href="{/css/common.css — 실제 공통 CSS 경로}">
+<link rel="stylesheet" href="{/css/tokens.css — CSS 변수 레이어 (있는 경우)}">
+
+<!-- 프리뷰 페이지 자체의 뼈대 스타일만 예외적으로 허용 (컴포넌트 스타일 금지) -->
+<style>
+  .dara-preview-section { margin: 32px 24px; padding-bottom: 24px; border-bottom: 1px solid #ddd; }
+  .dara-preview-section > h2 { font-size: 16px; margin-bottom: 4px; }
+  .dara-preview-note { font-size: 12px; color: #777; margin-bottom: 16px; }
+  .dara-preview-row { display: flex; gap: 12px; align-items: flex-start; flex-wrap: wrap; margin-bottom: 12px; }
+</style>
+</head>
+<body>
+
+<div class="dara-preview-section">
+  <h2>색상 토큰</h2>
+  <p class="dara-preview-note">tokens.md와 1:1 대응. /dara-extract가 자동 생성.</p>
+  <div class="dara-preview-row">
+    <!-- 토큰별 스와치: <div style="background:var(--color-primary)">--color-primary</div> 형태로 생성 -->
+    {색상 스와치 — /dara-extract가 채움}
+  </div>
+</div>
+
+<div class="dara-preview-section">
+  <h2>버튼</h2>
+  <p class="dara-preview-note">components/button.md의 스니펫을 그대로 붙여넣기. 변형·상태별 나열.</p>
+  <div class="dara-preview-row">
+    {예: <button type="button" class="btn btn-primary">저장</button>}
+    {예: <button type="button" class="btn btn-default">취소</button>}
+    {예: <button type="button" class="btn btn-danger">삭제</button>}
+    {예: <button type="button" class="btn btn-primary" disabled>저장</button>}
+  </div>
+</div>
+
+<div class="dara-preview-section">
+  <h2>폼 입력</h2>
+  <div class="dara-preview-row">{components/form.md 스니펫}</div>
+</div>
+
+<div class="dara-preview-section">
+  <h2>테이블</h2>
+  {components/table.md 스니펫}
+</div>
+
+<!-- 새 컴포넌트가 /dara-learn으로 등록될 때마다 섹션을 추가한다 -->
+
+</body>
+</html>

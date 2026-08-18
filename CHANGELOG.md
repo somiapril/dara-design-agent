@@ -1,0 +1,13 @@
+# Changelog
+
+본 프로젝트는 [Semantic Versioning](https://semver.org/lang/ko/)을 따릅니다.
+
+## [1.0.0] - 2026
+
+### 첫 정식 릴리즈
+- 인테이크 플로우(`/dara`): 케이스 A/B/C 선택 + 케이스별 질문 + 반응형·다크모드 확정 → 실행 라우팅.
+- 워크플로우 커맨드: extract · plan-review · build · review · learn · apply-legacy + 제작 전/후 공용 rubric.
+- 서비스별 디자인 시스템 Skill 템플릿(tokens · components · patterns · dont · preview · component-checklist).
+- 스타일 갤러리 통합(5방향 × 2밀도): 실물로 방향 선택 → 토큰 시드 매핑(차트 팔레트 · primary 파생 · 라디우스 스케일 · 라이트/다크 2벌). 정렬 가능한 데이터 테이블 샘플 포함.
+- 렌더 라이브러리 기본값: 차트 ECharts · 데이터 테이블 Grid.js.
+- Claude Cowork/Code 채팅 UX(클릭형 질문 · 갤러리 자동 렌더) + Codex(`AGENTS.md`) 병행.

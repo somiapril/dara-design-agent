@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DARA · 스타일 갤러리</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.24.0/dist/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --font: "Pretendard", -apple-system, BlinkMacSystemFont, sans-serif; }
+  body {
+    font-family: var(--font);
+    background: #eef0f4;
+    color: #1a1a1a;
+    padding: 40px 24px 80px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page-head { max-width: 1240px; margin: 0 auto 20px; }
+  .page-head .eyebrow {
+    font-size: 12px; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; color: #6b7280; margin-bottom: 8px;
+  }
+  .page-head h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; }
+  .page-head p { font-size: 14px; color: #5b6472; margin-top: 8px; line-height: 1.6; }
+
+  .controlbar {
+    max-width: 1240px; margin: 0 auto 22px;
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  }
+  .fontnote {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 600; color: #374151;
+    background: #fff; border: 1px solid #dfe3ea; border-radius: 6px; padding: 7px 12px;
+  }
+  .density-toggle {
+    display: inline-flex; background: #fff; border: 1px solid #dfe3ea;
+    border-radius: 6px; overflow: hidden;
+  }
+  .density-toggle button {
+    font-family: var(--font); font-size: 12px; font-weight: 600;
+    border: none; background: transparent; color: #6b7280;
+    padding: 8px 14px; cursor: pointer;
+  }
+  .density-toggle button.on { background: #171717; color: #fff; }
+  .density-hint { font-size: 12px; color: #8a92a0; }
+
+  .grid {
+    max-width: 1240px; margin: 0 auto;
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px;
+    align-items: start;
+  }
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+
+  /* ---- panel shell ---- */
+  .panel {
+    border-radius: 10px; overflow: hidden;
+    border: 2px solid transparent;
+    box-shadow: 0 4px 20px rgba(20,24,40,.06);
+    background: #fff; position: relative; transition: border-color .15s, transform .15s;
+    cursor: pointer;
+  }
+  .panel:hover { transform: translateY(-2px); }
+  .panel.selected { border-color: #2f6bff; box-shadow: 0 8px 30px rgba(47,107,255,.18); }
+  .panel .pick {
+    position: absolute; top: 14px; right: 14px; z-index: 5;
+    width: 26px; height: 26px; border-radius: 50%;
+    border: 2px solid rgba(0,0,0,.18); background: rgba(255,255,255,.85);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; color: #fff; transition: .15s;
+  }
+  .panel.selected .pick { background: #2f6bff; border-color: #2f6bff; }
+  .panel.selected .pick::after { content: "✓"; }
+
+  .panel-meta {
+    padding: 16px 18px 14px; border-bottom: 1px solid rgba(0,0,0,.06); background: #fff;
+  }
+  .panel-meta .tname { font-size: 16px; font-weight: 800; letter-spacing: -0.01em; }
+  .panel-meta .tdesc { font-size: 12px; color: #6b7280; margin-top: 3px; }
+  .swatches { display: flex; gap: 6px; margin-top: 12px; }
+  .swatches i {
+    width: 26px; height: 26px; border-radius: 5px; display: block;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,.08);
+  }
+
+  /* ---- rendered sample stage ---- */
+  .stage { padding: 22px 20px 26px; }
+  .stage .s-title { font-size: 18px; font-weight: 800; letter-spacing: -0.02em; }
+  .stage .s-sub { font-size: 12.5px; margin-top: 4px; }
+  .btnlabel { font-size: 10.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; opacity: .55; margin-top: 16px; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; }
+  .btn { font-family: var(--font); font-weight: 600; font-size: 13px; border: none; cursor: pointer; padding: 9px 16px; }
+  .btn.ghost { background: transparent; }
+  .btn.pill { border-radius: 999px !important; }
+  .inp { font-family: var(--font); font-size: 13px; padding: 9px 12px; width: 100%; margin-top: 14px; outline: none; }
+  .badges { display: flex; gap: 6px; margin-top: 14px; flex-wrap: wrap; }
+  .badge { font-size: 11px; font-weight: 700; padding: 4px 9px; }
+  .card { margin-top: 16px; padding: 15px 16px; }
+  .card .c-h { font-size: 13px; font-weight: 700; }
+  .card .c-p { font-size: 12px; margin-top: 5px; line-height: 1.55; }
+  .stats { display: flex; gap: 10px; margin-top: 14px; }
+  .stat { flex: 1; padding: 13px 14px; }
+  .stat .k { font-size: 11px; font-weight: 600; }
+  .stat .v { font-size: 21px; font-weight: 800; margin-top: 3px; letter-spacing: -0.02em; }
+  .stat .d { font-size: 10.5px; font-weight: 700; margin-top: 2px; }
+
+  /* ---- charts ---- */
+  .charts { display: flex; gap: 10px; margin-top: 14px; }
+  .chartbox { flex: 1; padding: 12px 12px 6px; min-width: 0; }
+  .chartbox .ch-h { font-size: 12px; font-weight: 700; margin-bottom: 2px; }
+  .chartbox .ch { width: 100%; height: 190px; }
+  .pal-strip { display: flex; gap: 4px; margin-top: 12px; align-items: center; }
+  .pal-strip .pl { font-size: 10.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; opacity: .55; margin-right: 6px; }
+  .pal-strip i { flex: 1; height: 14px; border-radius: 3px; display: block; }
+
+  /* ---- data table (정렬 가능 · 테마색은 --tbl-* 변수로) ---- */
+  .dtable-wrap { margin-top: 12px; border: 1px solid var(--tbl-line); border-radius: var(--tbl-radius, 8px); overflow: hidden; }
+  .dtable { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .dtable th { text-align: left; background: var(--tbl-head); color: var(--tbl-sub); font-weight: 700; font-size: 10.5px; letter-spacing: .02em; padding: 8px 11px; cursor: pointer; user-select: none; white-space: nowrap; border-bottom: 1px solid var(--tbl-line); }
+  .dtable th .car { display: inline-flex; vertical-align: middle; margin-left: 3px; opacity: .4; }
+  .dtable th .car .ti { font-size: 14px; line-height: 1; }
+  .dtable th.sorted { color: var(--tbl-accent); }
+  .dtable th.sorted .car { opacity: 1; }
+  .dtable td { padding: 8px 11px; color: var(--tbl-text); border-bottom: 1px solid var(--tbl-line); }
+  .dtable tbody tr:last-child td { border-bottom: none; }
+  .dtable tbody tr:hover td { background: var(--tbl-hover); }
+  .dtable .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .dtable-foot { display: flex; justify-content: space-between; align-items: center; padding: 7px 11px; font-size: 10.5px; color: var(--tbl-sub); background: var(--tbl-head); border-top: 1px solid var(--tbl-line); }
+  .dtable-foot .pg { display: inline-flex; align-items: center; gap: 4px; }
+  .dtable-foot .pg b { color: var(--tbl-accent); }
+  .dtable-foot .pg i { font-size: 14px; line-height: 1; opacity: .7; }
+  body.compact .dtable th { padding: 6px 9px; font-size: 10px; }
+  body.compact .dtable td { padding: 6px 9px; font-size: 11.5px; }
+  body.compact .dtable-wrap { margin-top: 10px; }
+
+  /* ---- status badges & notifications (Tabler icons inline) ---- */
+  .st-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+  .st-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; padding: 4px 10px 4px 8px; border-radius: 3px; }
+  .st-badge svg { width: 13px; height: 13px; }
+  .notif { display: flex; gap: 10px; align-items: flex-start; margin-top: 8px; padding: 11px 13px; border-radius: 6px; }
+  .notif svg { width: 16px; height: 16px; flex: none; }
+  .notif .ic { display: inline-flex; flex: none; padding: 6px; border-radius: 4px; }
+  .notif .n-h { font-weight: 700; font-size: 12.5px; }
+  .notif .n-p { margin-top: 2px; line-height: 1.5; font-size: 12px; }
+  body.compact .st-badge { font-size: 10px; padding: 3px 8px 3px 6px; }
+  body.compact .notif { padding: 8px 10px; margin-top: 6px; }
+
+  /* ---- Compact density ---- */
+  body.compact .stage { padding: 16px 16px 18px; }
+  body.compact .stage .s-title { font-size: 15px; }
+  body.compact .stage .s-sub { font-size: 11.5px; margin-top: 2px; }
+  body.compact .btnlabel { margin-top: 11px; }
+  body.compact .row { margin-top: 6px; gap: 6px; }
+  body.compact .btn { font-size: 12px; padding: 6px 12px; }
+  body.compact .inp { font-size: 12px; padding: 7px 10px; margin-top: 10px; }
+  body.compact .badges { margin-top: 10px; }
+  body.compact .badge { font-size: 10px; padding: 3px 7px; }
+  body.compact .card { margin-top: 11px; padding: 11px 12px; }
+  body.compact .card .c-h { font-size: 12px; }
+  body.compact .card .c-p { font-size: 11px; margin-top: 3px; }
+  body.compact .stats { margin-top: 10px; gap: 8px; }
+  body.compact .stat { padding: 9px 11px; }
+  body.compact .stat .v { font-size: 17px; }
+  body.compact .charts { margin-top: 10px; gap: 8px; }
+  body.compact .chartbox { padding: 9px 9px 4px; }
+  body.compact .chartbox .ch { height: 160px; }
+
+  /* ============ THEME 1 · Minimal Ink (Attio) ============ */
+  .t-ink .stage { background: #ffffff; }
+  .t-ink .s-title { color: #1C1F26; }
+  .t-ink .s-sub, .t-ink .card .c-p, .t-ink .stat .k, .t-ink .btnlabel, .t-ink .pal-strip .pl { color: #6C7686; }
+  .t-ink .btn { background: #266DF0; color: #ffffff; border-radius: 5px; }
+  .t-ink .btn:hover { background: #1D5CD8; }
+  .t-ink .btn:active { background: #1A4FBE; }
+  .t-ink .btn.ghost { background: #fff; color: #3E4552; box-shadow: inset 0 0 0 1px #D9DEE7; border-radius: 5px; }
+  .t-ink .btn.ghost:hover { background: #F7F9FB; }
+  .t-ink .inp { background: #fff; border: 1px solid #D9DEE7; border-radius: 5px; color: #1C1F26; }
+  .t-ink .inp:focus { outline: 2px solid rgba(38,109,240,.35); }
+  .t-ink .badge { background: #E8ECF2; color: #6C7686; border-radius: 3px; }
+  .t-ink .badge.acc { background: #E9F0FE; color: #266DF0; }
+  .t-ink .card { background: #F7F9FB; border: 1px solid #E8ECF2; border-radius: 6px; }
+  .t-ink .card .c-h { color: #1C1F26; }
+  .t-ink .stat { background: #F7F9FB; border: 1px solid #E8ECF2; border-radius: 6px; }
+  .t-ink .stat .v { color: #1C1F26; }
+  .t-ink .stat .d { color: #067A4E; }
+  .t-ink .chartbox { background: #fff; border: 1px solid #E8ECF2; border-radius: 6px; }
+  .t-ink .chartbox .ch-h { color: #1C1F26; }
+
+  /* ============ THEME 2 · Ink Dark (테마 1의 다크 포팅 · 동일 블루+12색) ============ */
+  .t-inkdark .stage { background: #0c0e13; }
+  .t-inkdark .s-title { color: #EDF0F5; }
+  .t-inkdark .s-sub, .t-inkdark .card .c-p, .t-inkdark .stat .k, .t-inkdark .btnlabel, .t-inkdark .pal-strip .pl { color: #97A0B2; }
+  .t-inkdark .btn { background: #266DF0; color: #ffffff; border-radius: 5px; }
+  .t-inkdark .btn:hover { background: #3B7DF5; }
+  .t-inkdark .btn:active { background: #1D5CD8; }
+  .t-inkdark .btn.ghost { background: #161922; color: #EDF0F5; box-shadow: inset 0 0 0 1px #2c3240; border-radius: 5px; }
+  .t-inkdark .btn.ghost:hover { background: #1c202b; }
+  .t-inkdark .inp { background: #12151d; border: 1px solid #272c38; border-radius: 5px; color: #EDF0F5; }
+  .t-inkdark .inp::placeholder { color: #5f6879; }
+  .t-inkdark .inp:focus { outline: 2px solid rgba(76,141,255,.5); }
+  .t-inkdark .badge { border-radius: 3px; }
+  .t-inkdark .badge.b1 { background: #232834; color: #AEB6C6; }
+  .t-inkdark .badge.b2 { background: rgba(38,109,240,.22); color: #6BA1FF; }
+  .t-inkdark .badge.b3 { background: #232834; color: #7E879A; }
+  .t-inkdark .card { background: #161922; border: 1px solid #272c38; border-radius: 6px; }
+  .t-inkdark .card .c-h { color: #EDF0F5; }
+  .t-inkdark .stat { background: #161922; border: 1px solid #272c38; border-radius: 6px; }
+  .t-inkdark .stat .v { color: #EDF0F5; }
+  .t-inkdark .stat .d { color: #42D3A0; }
+  .t-inkdark .chartbox { background: #161922; border: 1px solid #272c38; border-radius: 6px; }
+  .t-inkdark .chartbox .ch-h { color: #EDF0F5; }
+
+  /* ============ THEME 3 · Tone Violet (화이트 · 바이올렛 톤온톤 · #5e42eb) ============ */
+  .t-lav .stage { background: #fbfbfe; }
+  .t-lav .s-title { color: #1c1836; }
+  .t-lav .s-sub, .t-lav .card .c-p, .t-lav .stat .k, .t-lav .btnlabel, .t-lav .pal-strip .pl { color: #6c6890; }
+  .t-lav .btn { background: #5e42eb; color: #ffffff; border-radius: 6px; }
+  .t-lav .btn:hover { background: #4e34c9; }
+  .t-lav .btn:active { background: #3f2ba1; }
+  .t-lav .btn.ghost { background: #ffffff; color: #3a3560; box-shadow: inset 0 0 0 1px #e5e1f4; border-radius: 6px; }
+  .t-lav .btn.ghost:hover { background: #f6f4fe; }
+  .t-lav .inp { background: #ffffff; border: 1px solid #e5e1f4; border-radius: 6px; color: #1c1836; }
+  .t-lav .inp::placeholder { color: #a3a0bd; }
+  .t-lav .inp:focus { border-color: #5e42eb; outline: 2px solid rgba(94,66,235,.28); }
+  .t-lav .badge { border-radius: 999px; }
+  .t-lav .badge.b1 { background: #efecfc; color: #5b558a; }
+  .t-lav .badge.b2 { background: #e4dcfd; color: #4e34c9; }
+  .t-lav .badge.b3 { background: #f1f0f6; color: #8b88a6; }
+  .t-lav .card { background: #ffffff; border: 1px solid #eceaf6; border-radius: 10px; }
+  .t-lav .card .c-h { color: #1c1836; }
+  .t-lav .stat { background: #ffffff; border: 1px solid #eceaf6; border-radius: 10px; }
+  .t-lav .stat .v { color: #1c1836; }
+  .t-lav .stat .d { color: #5e42eb; }
+  .t-lav .chartbox { background: #ffffff; border: 1px solid #eceaf6; border-radius: 10px; }
+  .t-lav .chartbox .ch-h { color: #1c1836; }
+
+  /* ============ THEME 4 · Tone Violet Dark (테마 3의 다크 · 블랙+바이올렛) ============ */
+  .t-lavdark .stage { background: #09080f; }
+  .t-lavdark .s-title { color: #ECEAF7; }
+  .t-lavdark .s-sub, .t-lavdark .card .c-p, .t-lavdark .stat .k, .t-lavdark .btnlabel, .t-lavdark .pal-strip .pl { color: #8b87a6; }
+  .t-lavdark .btn { background: #5e42eb; color: #ffffff; border-radius: 6px; }
+  .t-lavdark .btn:hover { background: #7857ee; }
+  .t-lavdark .btn.ghost { background: #14121f; color: #ECEAF7; box-shadow: inset 0 0 0 1px #2c2942; border-radius: 6px; }
+  .t-lavdark .btn.ghost:hover { background: #1b1830; }
+  .t-lavdark .inp { background: #100e19; border: 1px solid #29263c; border-radius: 6px; color: #ECEAF7; }
+  .t-lavdark .inp::placeholder { color: #5f5b78; }
+  .t-lavdark .inp:focus { outline: 2px solid rgba(120,87,238,.5); }
+  .t-lavdark .badge { border-radius: 999px; }
+  .t-lavdark .badge.b1 { background: #1e1b2e; color: #c6c2e2; }
+  .t-lavdark .badge.b2 { background: rgba(120,87,238,.22); color: #a996ff; }
+  .t-lavdark .badge.b3 { background: #1e1b2e; color: #807ca0; }
+  .t-lavdark .card { background: #14121f; border: 1px solid #29263c; border-radius: 10px; }
+  .t-lavdark .card .c-h { color: #ECEAF7; }
+  .t-lavdark .stat { background: #14121f; border: 1px solid #29263c; border-radius: 10px; }
+  .t-lavdark .stat .v { color: #ECEAF7; }
+  .t-lavdark .stat .d { color: #a996ff; }
+  .t-lavdark .chartbox { background: #14121f; border: 1px solid #29263c; border-radius: 10px; }
+  .t-lavdark .chartbox .ch-h { color: #ECEAF7; }
+
+  /* ============ THEME 5 · Cool Mono (쿨톤 블랙 + 화이트 · 차트만 멀티컬러) ============ */
+  .t-mono .stage { background: #f7f9fb; }
+  .t-mono .s-title { color: #0f172a; }
+  .t-mono .s-sub, .t-mono .card .c-p, .t-mono .stat .k, .t-mono .btnlabel, .t-mono .pal-strip .pl { color: #64748b; }
+  .t-mono .btn { background: #0f172a; color: #ffffff; border-radius: 6px; }
+  .t-mono .btn:hover { background: #1e293b; }
+  .t-mono .btn:active { background: #0b1220; }
+  .t-mono .btn.ghost { background: #ffffff; color: #334155; box-shadow: inset 0 0 0 1px #e2e8f0; border-radius: 6px; }
+  .t-mono .btn.ghost:hover { background: #f1f5f9; }
+  .t-mono .inp { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; color: #0f172a; }
+  .t-mono .inp::placeholder { color: #94a3b8; }
+  .t-mono .inp:focus { border-color: #0f172a; outline: 2px solid rgba(15,23,42,.22); }
+  .t-mono .badge { border-radius: 4px; }
+  .t-mono .badge.b1 { background: #f1f5f9; color: #475569; }
+  .t-mono .badge.b2 { background: #0f172a; color: #ffffff; }
+  .t-mono .badge.b3 { background: #f1f5f9; color: #94a3b8; }
+  .t-mono .card { background: #ffffff; border: 1px solid #e8edf2; border-radius: 8px; }
+  .t-mono .card .c-h { color: #0f172a; }
+  .t-mono .stat { background: #ffffff; border: 1px solid #e8edf2; border-radius: 8px; }
+  .t-mono .stat .v { color: #0f172a; }
+  .t-mono .stat .d { color: #4b9179; }
+  .t-mono .chartbox { background: #ffffff; border: 1px solid #e8edf2; border-radius: 8px; }
+  .t-mono .chartbox .ch-h { color: #0f172a; }
+
+  /* ---- data table theme tokens (per theme) ---- */
+  .t-ink     { --tbl-head:#F7F9FB; --tbl-line:#E8ECF2; --tbl-text:#1C1F26; --tbl-sub:#6C7686; --tbl-hover:#F4F7FB; --tbl-accent:#266DF0; --tbl-radius:6px; }
+  .t-inkdark { --tbl-head:#12151d; --tbl-line:#272c38; --tbl-text:#EDF0F5; --tbl-sub:#97A0B2; --tbl-hover:#1c202b; --tbl-accent:#6BA1FF; --tbl-radius:6px; }
+  .t-lav     { --tbl-head:#f6f4fe; --tbl-line:#eceaf6; --tbl-text:#1c1836; --tbl-sub:#6c6890; --tbl-hover:#f7f6fd; --tbl-accent:#5e42eb; --tbl-radius:10px; }
+  .t-lavdark { --tbl-head:#100e19; --tbl-line:#29263c; --tbl-text:#ECEAF7; --tbl-sub:#8b87a6; --tbl-hover:#1b1830; --tbl-accent:#a996ff; --tbl-radius:10px; }
+  .t-mono    { --tbl-head:#f1f5f9; --tbl-line:#e8edf2; --tbl-text:#0f172a; --tbl-sub:#64748b; --tbl-hover:#f8fafc; --tbl-accent:#4f79c7; --tbl-radius:8px; }
+
+  .footer-note {
+    max-width: 1240px; margin: 28px auto 0; font-size: 12.5px; color: #6b7280;
+    line-height: 1.7; text-align: center;
+  }
+</style>
+</head>
+<body>
+  <div class="page-head">
+    <div class="eyebrow">DARA · Style Gallery</div>
+    <h1>디자인 방향을 골라주세요</h1>
+    <p>같은 컴포넌트 세트를 5가지 방향으로 렌더했습니다. 마음에 드는 카드를 클릭하면 선택됩니다.<br><b>1·2 컬러풀 블루</b>(화이트/다크) · <b>3·4 바이올렛 톤온톤</b>(화이트/다크, 차트는 톤온톤+멀티컬러 2안) · <b>5 쿨톤 블랙&화이트 모노</b>(정적 멀티컬러 차트).<br>버튼은 <b>기본(사각) 스타일이 디자인 시스템의 기본형</b>이고, pill은 CTA용 변형으로 함께 제공합니다.<br><b>프로덕션 기본 라이브러리</b> — 차트: <b>ECharts</b> · 데이터 테이블: <b>Grid.js</b>(경량·정렬/검색/페이지네이션). 아래 테이블은 스타일 참조용 샘플(헤더 클릭 시 정렬).</p>
+  </div>
+
+  <div class="controlbar">
+    <span class="fontnote">🅐 폰트는 4개 테마 모두 Pretendard로 통일</span>
+    <div class="density-toggle" id="dtoggle">
+      <button class="on" onclick="setDensity('comfortable', this)">넓은 여백 · Comfortable</button>
+      <button onclick="setDensity('compact', this)">좁은 여백 · Compact</button>
+    </div>
+    <span class="density-hint">홈/랜딩은 Comfortable, 대시보드/콘솔은 Compact 추천 — 5테마 × 2밀도</span>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="footer-note" id="foot">
+    카드를 클릭해 방향을 선택하세요. 선택하신 테마 기준으로 tokens 초안(컬러·라디우스·타이포·밀도·차트 팔레트 10색)을 만들어 드립니다.<br>
+    primary 컬러를 직접 지정하시면 테마의 구조(라디우스·그림자·밀도)는 유지하고 액센트만 지정 색으로 교체됩니다.
+  </div>
+
+<script>
+  /* 테마 정의: 차트 팔레트 10색은 CVD(색각이상)·대비 검증 통과 세트 */
+  var THEMES = [
+    {
+      key: 'ink', cls: 't-ink', name: 'Minimal Ink', num: 1,
+      desc: '블루 Primary #266DF0 (A안) — 차트 12색과 동계열 UI · 시맨틱 4종도 차트 색에서 파생',
+      sw: ['#ffffff','#1C1F26','#266DF0','#9162F9'],
+      badges: ['<span class="badge">기본</span>','<span class="badge acc">활성</span>','<span class="badge">대기</span>'],
+      chart: {
+        pal: ['#266DF0','#17BDE9','#0FC27B','#9162F9','#FD9038','#F2C94C','#F56C6C','#A37BFA','#5EA4FF','#6DD5F5','#63D9A5','#B6BCC8'],
+        surface: '#ffffff', ink: '#6C7686', grid: '#E8ECF2'
+      },
+      statusInk: { h: '#1C1F26', p: '#6C7686', surface: '#ffffff' },
+      status: [
+        { k: 'success', icon: 'check',    bg: '#E2FBEF', fg: '#067A4E', bd: '#8FDDB4', label: 'Success', h: '저장 완료',   p: '변경 사항이 정상적으로 반영되었습니다.' },
+        { k: 'warning', icon: 'triangle', bg: '#FCF4D5', fg: '#7A6000', bd: '#E5CE6E', label: 'Warning', h: '용량 임계 접근', p: '리소스 사용량이 85%를 초과했습니다.' },
+        { k: 'error',   icon: 'circlex',  bg: '#FEECEC', fg: '#C43A3C', bd: '#F4A6A6', label: 'Error',   h: '요청 실패',   p: '작업을 완료하지 못했습니다. 잠시 후 다시 시도해 주세요.' },
+        { k: 'info',    icon: 'info',     bg: '#E3F7FD', fg: '#0B7A99', bd: '#8ED4EC', label: 'Info',    h: '새 알림 도착', p: '새 업데이트가 준비되었습니다. 확인해 보세요.' }
+      ]
+    },
+    {
+      key: 'inkdark', cls: 't-inkdark', name: 'Ink Dark', num: 2,
+      desc: '테마 1의 다크 버전 — 동일 블루 #266DF0 + 12색 차트, 다크 블루그레이 서피스 래더',
+      sw: ['#0c0e13','#161922','#266DF0','#9162F9'],
+      badges: ['<span class="badge b1">기본</span>','<span class="badge b2">활성</span>','<span class="badge b3">대기</span>'],
+      chart: {
+        pal: ['#266DF0','#17BDE9','#0FC27B','#9162F9','#FD9038','#F2C94C','#F56C6C','#A37BFA','#5EA4FF','#6DD5F5','#63D9A5','#B6BCC8'],
+        surface: '#161922', ink: '#97A0B2', grid: '#272c38'
+      },
+      statusInk: { h: '#EDF0F5', p: '#97A0B2', surface: '#161922' },
+      status: [
+        { k: 'success', icon: 'check',    bg: '#132a20', fg: '#42D3A0', bd: '#1E5A42', label: 'Success', h: '저장 완료',   p: '변경 사항이 정상적으로 반영되었습니다.' },
+        { k: 'warning', icon: 'triangle', bg: '#322710', fg: '#F2C94C', bd: '#5F4D18', label: 'Warning', h: '용량 임계 접근', p: '리소스 사용량이 85%를 초과했습니다.' },
+        { k: 'error',   icon: 'circlex',  bg: '#351a1c', fg: '#F98A8A', bd: '#6E2F33', label: 'Error',   h: '요청 실패',   p: '작업을 완료하지 못했습니다. 잠시 후 다시 시도해 주세요.' },
+        { k: 'info',    icon: 'info',     bg: '#0d2733', fg: '#4FC7E6', bd: '#175A6B', label: 'Info',    h: '새 알림 도착', p: '새 업데이트가 준비되었습니다. 확인해 보세요.' }
+      ]
+    },
+    {
+      key: 'lav', cls: 't-lav', name: 'Tone Violet', num: 3,
+      desc: '바이올렛 톤온톤 (화이트) — 메인 #5e42eb, 화이트에 가까운 캔버스 · pill 뱃지 · 차트 톤온톤/멀티컬러 2안',
+      sw: ['#fbfbfe','#1c1836','#5e42eb','#977af2'],
+      badges: ['<span class="badge b1">기본</span>','<span class="badge b2">활성</span>','<span class="badge b3">대기</span>'],
+      chart: {
+        pal: ['#b8a4f7','#977af2','#7857ee','#5e42eb','#4e34c9','#3f2ba1','#2f2178'],
+        surface: '#ffffff', ink: '#6c6890', grid: '#eceaf6'
+      },
+      chartVariants: [
+        {
+          tag: 'A · 톤온톤 (바이올렛 램프)',
+          pal: ['#b8a4f7','#977af2','#7857ee','#5e42eb','#4e34c9','#3f2ba1','#2f2178'],
+          barPal: ['#b8a4f7','#7857ee','#5e42eb','#3f2ba1'],
+          piePal: ['#b8a4f7','#977af2','#7857ee','#5e42eb','#4e34c9','#2f2178']
+        },
+        {
+          tag: 'B · 멀티컬러 (바이올렛 리드)',
+          pal: ['#5e42eb','#2f8fe0','#12b886','#f59f00','#e8590c','#e64980','#22b8cf','#7cb518','#f03e3e','#868e96'],
+          barPal: ['#5e42eb','#2f8fe0','#12b886','#f59f00'],
+          piePal: ['#5e42eb','#2f8fe0','#12b886','#f59f00','#e8590c','#e64980']
+        }
+      ],
+      statusInk: { h: '#1c1836', p: '#6c6890', surface: '#ffffff' },
+      status: [
+        { k: 'success', icon: 'check',    bg: '#e8f4ee', fg: '#2f8f5f', bd: '#b8e0c9', label: 'Success', h: '저장 완료',   p: '변경 사항이 정상적으로 반영되었습니다.' },
+        { k: 'warning', icon: 'triangle', bg: '#fbf1d9', fg: '#9a6a12', bd: '#ecd79a', label: 'Warning', h: '용량 임계 접근', p: '리소스 사용량이 85%를 초과했습니다.' },
+        { k: 'error',   icon: 'circlex',  bg: '#fbe9e9', fg: '#c0392b', bd: '#f0b8b2', label: 'Error',   h: '요청 실패',   p: '작업을 완료하지 못했습니다. 잠시 후 다시 시도해 주세요.' },
+        { k: 'info',    icon: 'info',     bg: '#e9e5fc', fg: '#4e34c9', bd: '#cbc0f3', label: 'Info',    h: '새 알림 도착', p: '새 업데이트가 준비되었습니다. 확인해 보세요.' }
+      ]
+    },
+    {
+      key: 'lavdark', cls: 't-lavdark', name: 'Tone Violet Dark', num: 4,
+      desc: '테마 3의 다크 — 블랙 #09080f + 바이올렛 #5e42eb · 차트 톤온톤/멀티컬러 2안',
+      sw: ['#09080f','#14121f','#5e42eb','#a996ff'],
+      badges: ['<span class="badge b1">기본</span>','<span class="badge b2">활성</span>','<span class="badge b3">대기</span>'],
+      chart: {
+        pal: ['#e9e3fd','#d5c9fb','#b8a4f7','#977af2','#7857ee','#5e42eb','#4e34c9'],
+        surface: '#14121f', ink: '#8b87a6', grid: '#29263c'
+      },
+      chartVariants: [
+        {
+          tag: 'A · 톤온톤 (바이올렛 램프)',
+          pal: ['#e9e3fd','#d5c9fb','#b8a4f7','#977af2','#7857ee','#5e42eb','#4e34c9'],
+          barPal: ['#e9e3fd','#b8a4f7','#7857ee','#4e34c9'],
+          piePal: ['#e9e3fd','#d5c9fb','#b8a4f7','#977af2','#7857ee','#4e34c9']
+        },
+        {
+          tag: 'B · 멀티컬러 (다크 대응)',
+          pal: ['#8b7bff','#38bdf8','#34d399','#fbbf24','#fb7185','#22d3ee','#c084fc','#a3e635','#f472b6','#94a3b8'],
+          barPal: ['#8b7bff','#38bdf8','#34d399','#fbbf24'],
+          piePal: ['#8b7bff','#38bdf8','#34d399','#fbbf24','#fb7185','#c084fc']
+        }
+      ],
+      statusInk: { h: '#ECEAF7', p: '#8b87a6', surface: '#14121f' },
+      status: [
+        { k: 'success', icon: 'check',    bg: '#12271d', fg: '#48D69C', bd: '#1F5A42', label: 'Success', h: '저장 완료',   p: '변경 사항이 정상적으로 반영되었습니다.' },
+        { k: 'warning', icon: 'triangle', bg: '#2f2610', fg: '#E7C15A', bd: '#5F4D18', label: 'Warning', h: '용량 임계 접근', p: '리소스 사용량이 85%를 초과했습니다.' },
+        { k: 'error',   icon: 'circlex',  bg: '#34181b', fg: '#F08A8A', bd: '#64292F', label: 'Error',   h: '요청 실패',   p: '작업을 완료하지 못했습니다. 잠시 후 다시 시도해 주세요.' },
+        { k: 'info',    icon: 'info',     bg: '#211d3e', fg: '#A996FF', bd: '#3a3570', label: 'Info',    h: '새 알림 도착', p: '새 업데이트가 준비되었습니다. 확인해 보세요.' }
+      ]
+    },
+    {
+      key: 'mono', cls: 't-mono', name: 'Cool Mono', num: 5,
+      desc: '쿨톤 블랙 #0f172a + 화이트 모노 — 차트만 멀티컬러(Balanced Clean · 웜·쿨 균형의 표준 카테고리 팔레트)',
+      sw: ['#ffffff','#0f172a','#334155','#4f79c7'],
+      badges: ['<span class="badge b1">기본</span>','<span class="badge b2">활성</span>','<span class="badge b3">대기</span>'],
+      chart: {
+        pal: ['#4f79c7','#e79a4a','#57ab7d','#d76b6b','#8a72c9','#4fb0cc','#dd82b0','#a3a94e','#3f9e93','#b07f56','#7fa8dd','#7f8a9c'],
+        surface: '#ffffff', ink: '#64748b', grid: '#e8edf2'
+      },
+      statusInk: { h: '#0f172a', p: '#64748b', surface: '#ffffff' },
+      status: [
+        { k: 'success', icon: 'check',    bg: '#e9f3ee', fg: '#3f7a5f', bd: '#bcdcca', label: 'Success', h: '저장 완료',   p: '변경 사항이 정상적으로 반영되었습니다.' },
+        { k: 'warning', icon: 'triangle', bg: '#f6efdc', fg: '#8a6a1e', bd: '#e6d29a', label: 'Warning', h: '용량 임계 접근', p: '리소스 사용량이 85%를 초과했습니다.' },
+        { k: 'error',   icon: 'circlex',  bg: '#f6eaea', fg: '#b04a44', bd: '#e6b6b2', label: 'Error',   h: '요청 실패',   p: '작업을 완료하지 못했습니다. 잠시 후 다시 시도해 주세요.' },
+        { k: 'info',    icon: 'info',     bg: '#eaeff5', fg: '#3f5a7a', bd: '#bcc9dc', label: 'Info',    h: '새 알림 도착', p: '새 업데이트가 준비되었습니다. 확인해 보세요.' }
+      ]
+    }
+  ];
+
+
+  /* 패널 마크업 생성 */
+  function panelHTML(t) {
+    return '' +
+    '<div class="panel ' + t.cls + '" data-name="' + t.name + '" onclick="pick(this)">' +
+      '<div class="pick"></div>' +
+      '<div class="panel-meta">' +
+        '<div class="tname">' + t.num + ' · ' + t.name + '</div>' +
+        '<div class="tdesc">' + t.desc + '</div>' +
+        '<div class="swatches">' + t.sw.map(function(c){ return '<i style="background:' + c + '"></i>'; }).join('') + '</div>' +
+      '</div>' +
+      '<div class="stage">' +
+        '<div class="s-title">대시보드 미리보기</div>' +
+        '<div class="s-sub">주요 지표와 컴포넌트를 한눈에</div>' +
+        '<div class="btnlabel">기본 버튼 · Pill 변형</div>' +
+        '<div class="row">' +
+          '<button class="btn">시작하기</button>' +
+          '<button class="btn ghost">문서 보기</button>' +
+          '<button class="btn pill">CTA Pill</button>' +
+        '</div>' +
+        '<input class="inp" placeholder="검색…">' +
+        '<div class="badges">' + t.badges.join('') + '</div>' +
+        '<div class="card">' +
+          '<div class="c-h">최근 업데이트</div>' +
+          '<div class="c-p">새 데이터가 준비되었습니다. 상세 내역을 확인해 보세요.</div>' +
+        '</div>' +
+        '<div class="stats">' +
+          '<div class="stat"><div class="k">총계</div><div class="v">12,480</div><div class="d">▲ 3.1%</div></div>' +
+          '<div class="stat"><div class="k">활성 항목</div><div class="v">128</div><div class="d">▲ 12</div></div>' +
+        '</div>' +
+        statusSectionHTML(t) +
+        chartSectionHTML(t) +
+        tableSectionHTML(t) +
+      '</div>' +
+    '</div>';
+  }
+  /* Tabler 아이콘 (인라인 SVG · 1.5 stroke) */
+  var ICONS = {
+    check:    '<path d="M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0 -18z"/><path d="M9 12l2 2l4 -4"/>',
+    triangle: '<path d="M10.24 3.957l-8.422 14.06a1.989 1.989 0 0 0 1.7 2.983h16.845a1.989 1.989 0 0 0 1.7 -2.983l-8.423 -14.06a1.989 1.989 0 0 0 -3.4 0z"/><path d="M12 9v4"/><path d="M12 16h.01"/>',
+    circlex:  '<path d="M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0 -18z"/><path d="M10 10l4 4"/><path d="M14 10l-4 4"/>',
+    info:     '<path d="M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0 -18z"/><path d="M12 9h.01"/><path d="M11 12h1v4h1"/>',
+    bell:     '<path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6"/><path d="M9 17v1a3 3 0 0 0 6 0v-1"/>'
+  };
+  function icon(name, color) {
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="' + color + '" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' + ICONS[name] + '</svg>';
+  }
+  /* 상태 뱃지 + 알림 섹션 (status 정의가 있는 테마만) */
+  function statusSectionHTML(t) {
+    if (!t.status) return '';
+    var badges = t.status.map(function(s) {
+      return '<span class="st-badge" style="background:' + s.bg + ';color:' + s.fg + '">' + icon(s.icon, s.fg) + s.label + '</span>';
+    }).join('');
+    var ink = t.statusInk || { h: 'inherit', p: 'inherit', surface: '#ffffff' };
+    var notifs = t.status.map(function(s) {
+      return '<div class="notif" style="background:' + ink.surface + ';border:1px solid ' + s.bd + '">' +
+        '<span class="ic" style="background:' + s.bg + '">' + icon(s.icon, s.fg) + '</span>' +
+        '<div><div class="n-h" style="color:' + ink.h + '">' + s.h + '</div><div class="n-p" style="color:' + ink.p + '">' + s.p + '</div></div></div>';
+    }).join('');
+    return '<div class="btnlabel">상태 뱃지 · Tabler 1.5 stroke</div>' +
+           '<div class="st-row">' + badges + '</div>' +
+           '<div class="btnlabel">알림 (Notification)</div>' + notifs;
+  }
+  /* 차트 섹션: 기본은 1안, chartVariants가 있으면 여러 안을 세로로 비교 */
+  function chartSectionHTML(t) {
+    var variants = t.chartVariants || [{ tag: '', pal: t.chart.pal, barPal: null, piePal: null }];
+    return variants.map(function(v, i) {
+      var tagTxt = v.tag ? ' <span style="opacity:.6;font-weight:600">· ' + v.tag + '</span>' : '';
+      return '' +
+      '<div class="charts">' +
+        '<div class="chartbox"><div class="ch-h">월별 추이' + tagTxt + '</div><div class="ch" id="bar-' + t.key + '-' + i + '"></div></div>' +
+        '<div class="chartbox"><div class="ch-h">카테고리별 비중</div><div class="ch" id="pie-' + t.key + '-' + i + '"></div></div>' +
+      '</div>' +
+      '<div class="pal-strip"><span class="pl">차트 팔레트' + (v.tag ? ' ' + v.tag.charAt(0) : '') + ' · ' + v.pal.length + '색</span>' +
+        v.pal.map(function(c){ return '<i style="background:' + c + '"></i>'; }).join('') +
+      '</div>';
+    }).join('');
+  }
+  /* 데이터 테이블 섹션 (정렬 가능 · 프로덕션 기본 라이브러리 = Grid.js) */
+  var TBL_ROWS = [
+    { name:'결제 API',    grp:'그룹 A', st:'정상', stk:'success', so:1, req:1284, share:38.0 },
+    { name:'인증 서비스',  grp:'그룹 B', st:'주의', stk:'warning', so:2, req:932,  share:22.0 },
+    { name:'검색 인덱서',  grp:'그룹 C', st:'정상', stk:'success', so:1, req:640,  share:15.0 },
+    { name:'알림 워커',    grp:'그룹 D', st:'대기', stk:'info',    so:3, req:410,  share:12.0 },
+    { name:'이미지 CDN',   grp:'그룹 A', st:'정상', stk:'success', so:1, req:275,  share:8.0 },
+    { name:'로그 수집기',  grp:'그룹 B', st:'주의', stk:'warning', so:2, req:180,  share:5.0 }
+  ];
+  function tableSectionHTML(t) {
+    var head =
+      '<tr>' +
+        '<th data-num="0">항목<span class="car"><i class="ti ti-selector"></i></span></th>' +
+        '<th data-num="0">그룹<span class="car"><i class="ti ti-selector"></i></span></th>' +
+        '<th data-num="1">상태<span class="car"><i class="ti ti-selector"></i></span></th>' +
+        '<th class="num" data-num="1">요청 수<span class="car"><i class="ti ti-selector"></i></span></th>' +
+        '<th class="num" data-num="1">비중(%)<span class="car"><i class="ti ti-selector"></i></span></th>' +
+      '</tr>';
+    var sm = {}; (t.status || []).forEach(function(s){ sm[s.k] = s; });
+    var body = TBL_ROWS.map(function(r){
+      var ss = sm[r.stk] || { bg:'#eee', fg:'#666' };
+      return '<tr>' +
+        '<td data-v="' + r.name + '">' + r.name + '</td>' +
+        '<td data-v="' + r.grp + '">' + r.grp + '</td>' +
+        '<td data-v="' + r.so + '"><span class="badge" style="background:' + ss.bg + ';color:' + ss.fg + '">' + r.st + '</span></td>' +
+        '<td class="num" data-v="' + r.req + '">' + r.req.toLocaleString() + '</td>' +
+        '<td class="num" data-v="' + r.share + '">' + r.share.toFixed(1) + '</td>' +
+      '</tr>';
+    }).join('');
+    return '<div class="btnlabel">데이터 테이블 · 정렬 가능 (헤더 클릭)</div>' +
+      '<div class="dtable-wrap"><table class="dtable"><thead>' + head + '</thead><tbody>' + body + '</tbody></table>' +
+      '<div class="dtable-foot"><span>1–6 / 24행</span><span class="pg"><i class="ti ti-chevron-left"></i> <b>1</b> 2 3 <i class="ti ti-chevron-right"></i></span></div></div>';
+  }
+  document.getElementById('grid').innerHTML = THEMES.map(panelHTML).join('');
+
+  /* ECharts 렌더 */
+  var BAR_MONTHS = ['2월','3월','4월','5월','6월','7월'];
+  var BAR_SERIES = [
+    { name: '그룹 A', data: [42, 45, 44, 48, 51, 53] },
+    { name: '그룹 B', data: [30, 29, 33, 32, 35, 36] },
+    { name: '그룹 C', data: [22, 24, 23, 26, 27, 29] },
+    { name: '그룹 D', data: [12, 13, 15, 14, 16, 17] }
+  ];
+  var PIE_DATA = [
+    { name: '항목 A', value: 38 }, { name: '항목 B', value: 22 },
+    { name: '항목 C', value: 15 }, { name: '항목 D', value: 12 },
+    { name: '항목 E', value: 8 },  { name: '항목 F', value: 5 }
+  ];
+  var chartInstances = [];
+
+  function renderCharts() {
+    chartInstances.forEach(function(c){ c.dispose(); });
+    chartInstances = [];
+    THEMES.forEach(function(t) {
+      var cc = t.chart;
+      var txt = { color: cc.ink, fontFamily: 'Pretendard', fontSize: 10 };
+      var variants = t.chartVariants || [{ tag: '', pal: cc.pal, barPal: null, piePal: null }];
+
+      variants.forEach(function(v, vi) {
+        var barPal = v.barPal || v.pal;
+        var piePal = v.piePal || v.pal;
+
+        var bar = echarts.init(document.getElementById('bar-' + t.key + '-' + vi));
+        bar.setOption({
+          color: barPal,
+          grid: { left: 30, right: 4, top: 26, bottom: 18 },
+          legend: { top: 0, left: 0, itemWidth: 8, itemHeight: 8, icon: 'circle', textStyle: txt, itemGap: 8 },
+          tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+          xAxis: { type: 'category', data: BAR_MONTHS,
+            axisLabel: txt, axisLine: { lineStyle: { color: cc.grid } }, axisTick: { show: false } },
+          yAxis: { type: 'value',
+            axisLabel: txt, splitLine: { lineStyle: { color: cc.grid } } },
+          series: BAR_SERIES.map(function(s, i) {
+            return { name: s.name, type: 'bar', stack: 'total', data: s.data,
+              barWidth: 14,
+              itemStyle: { borderColor: cc.surface, borderWidth: 1,
+                borderRadius: i === BAR_SERIES.length - 1 ? [3,3,0,0] : 0 } };
+          })
+        });
+        chartInstances.push(bar);
+
+        var pie = echarts.init(document.getElementById('pie-' + t.key + '-' + vi));
+        pie.setOption({
+          color: piePal,
+          tooltip: { trigger: 'item', formatter: '{b}: {c}%' },
+          legend: { orient: 'vertical', right: 0, top: 'middle',
+            itemWidth: 8, itemHeight: 8, icon: 'circle', textStyle: txt, itemGap: 6 },
+          series: [{
+            type: 'pie', radius: ['42%','72%'], center: ['36%','50%'],
+            data: PIE_DATA,
+            itemStyle: { borderColor: cc.surface, borderWidth: 2, borderRadius: 3 },
+            label: { show: false }, labelLine: { show: false },
+            emphasis: { scale: true, scaleSize: 4 }
+          }]
+        });
+        chartInstances.push(pie);
+      });
+    });
+  }
+  renderCharts();
+  window.addEventListener('resize', function(){ chartInstances.forEach(function(c){ c.resize(); }); });
+
+  /* 데이터 테이블 정렬 (헤더 클릭 → asc/desc 토글, 기존 행 재정렬) */
+  function initTables(){
+    document.querySelectorAll('.dtable').forEach(function(tb){
+      var ths = Array.prototype.slice.call(tb.querySelectorAll('thead th'));
+      ths.forEach(function(th, ci){
+        th.addEventListener('click', function(){
+          var dir = th.getAttribute('data-dir') === 'asc' ? 'desc' : 'asc';
+          ths.forEach(function(h){ h.classList.remove('sorted'); h.removeAttribute('data-dir'); var c=h.querySelector('.car i'); if(c) c.className='ti ti-selector'; });
+          th.classList.add('sorted'); th.setAttribute('data-dir', dir);
+          var car = th.querySelector('.car i'); if(car) car.className = dir === 'asc' ? 'ti ti-chevron-up' : 'ti ti-chevron-down';
+          var num = th.getAttribute('data-num') === '1';
+          var tbody = tb.querySelector('tbody');
+          var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
+          rows.sort(function(a,b){
+            var x = a.children[ci].getAttribute('data-v'), y = b.children[ci].getAttribute('data-v');
+            if(num){ return dir==='asc' ? parseFloat(x)-parseFloat(y) : parseFloat(y)-parseFloat(x); }
+            return dir==='asc' ? x.localeCompare(y,'ko') : y.localeCompare(x,'ko');
+          });
+          rows.forEach(function(r){ tbody.appendChild(r); });
+        });
+      });
+    });
+  }
+  initTables();
+
+  /* 선택 & 밀도 */
+  var density = 'comfortable';
+  function pick(el){
+    document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('selected'); });
+    el.classList.add('selected');
+    updateFoot();
+  }
+  function setDensity(mode, btn){
+    density = mode;
+    document.body.classList.toggle('compact', mode === 'compact');
+    document.querySelectorAll('#dtoggle button').forEach(function(b){ b.classList.remove('on'); });
+    btn.classList.add('on');
+    chartInstances.forEach(function(c){ c.resize(); });
+    updateFoot();
+  }
+  function updateFoot(){
+    var sel = document.querySelector('.panel.selected');
+    if(!sel) return;
+    var dLabel = density === 'compact' ? '좁은 여백 (Compact)' : '넓은 여백 (Comfortable)';
+    document.getElementById('foot').innerHTML =
+      '선택됨: <b>' + sel.dataset.name + '</b> × <b>' + dLabel + '</b> — 이 조합으로 진행할까요? 확정하면 tokens 초안과 실제 화면 적용 예시를 만들어 드립니다.';
+  }
+</script>
+</body>
+</html>
