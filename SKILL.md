@@ -125,7 +125,13 @@ description: 디자인 시스템 자산화 + 화면 설계·개선·퍼블리싱
   - 시안 2~4개는 **서로 다른 방향**이어야 한다 (같은 레이아웃에 색만 바꾼 변형 금지)
   - 각 시안에 "대담한 요소 1곳"을 명시하고 나머지는 절제
   - `templates/design-system-skill/dont.md`의 AI 클리셰 팔레트를 시안 단계부터 배제
-- **Case B**: `commands/dara-extract.md` 실행 → 인벤토리 리포트 → 정규화 제안 → Skill 자산화 → (범위 ②③이면) `commands/dara-plan-review.md` → 개선 → 신규 화면은 Case C 경로로 전환. *(범위 ②③에서 **의도적 리스타일/리브랜딩**이면 `style-gallery.html`로 목표 방향을 먼저 고를 수 있다 — 단 기본은 추출 우선, 기존 코드에서 방향 도출.)*
+- **Case B**: **⚠ 필수 선행 게이트 — 개선 요청이 와도 진단부터 한다.** 사용자가 "이 화면만 고쳐줘"라고 해도 **곧바로 그 화면 시안으로 뛰지 않는다.** 먼저 `commands/dara-extract.md`로:
+  1. **기존 화면 자산 수집** — 대상 화면 + 그 화면이 쓰는 **공통 컴포넌트/CSS**를 포함해 대표 화면들을 스캔(색·타이포·간격·버튼·테이블·폼·상태 등 마크업 변형 전부).
+  2. **컴포넌트 레퍼런스 페이지 생성** — 실제 공통 CSS를 링크한 `preview.html`(스택별)로 "현재 컴포넌트들이 실제로 어떻게 생겼나"를 한 장에 모은다.
+  3. **디자인 진단** — 인벤토리 리포트(예: 버튼 7종·색 60종) + 비일관성 목록 + `rubric/review-checklist.md`로 **현행 상태 점수**를 낸다.
+  4. **진단 결과를 사용자에게 보여주고 개선 범위를 합의** → 그 다음에 개선 시안·적용.
+  - 이유: 한 화면만 봐도 그 화면은 **공통 컴포넌트를 공유**한다. 진단 없이 단일 화면만 고치면 나머지와 어긋나고(로컬 최적화), 토큰·컴포넌트 표준이 없어 개선이 재현되지 않는다.
+  - 이후: 정규화 제안 → Skill 자산화 → (범위 ②③이면) `commands/dara-plan-review.md` → 개선 → 적용은 `commands/dara-apply-legacy.md` → 신규 화면은 Case C 경로. *(범위 ②③에서 **의도적 리스타일/리브랜딩**이면 `style-gallery.html`로 목표 방향을 먼저 고를 수 있다 — 단 기본은 추출 우선.)*
 - **Case C**: 서비스 디자인 시스템 Skill 로드 (없으면 기존 가이드를 템플릿 포맷으로 1회 변환) → `commands/dara-plan-review.md` → `commands/dara-build.md` → `commands/dara-review.md` → `commands/dara-learn.md`
 
 ## STEP 4 — 툴 선택 & 전환 시점 (Cowork ↔ Claude Code)

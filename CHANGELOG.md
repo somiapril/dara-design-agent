@@ -2,6 +2,12 @@
 
 본 프로젝트는 [Semantic Versioning](https://semver.org/lang/ko/)을 따릅니다.
 
+## [1.1.0] - 2026
+
+### 변경 (Case B 동작)
+- **Case B 필수 선행 게이트 강제:** 사용자가 특정 화면만 개선을 요청해도, 먼저 `dara-extract`로 **자산 수집 → 컴포넌트 레퍼런스 페이지(preview.html) → 디자인 진단(비일관성 + rubric 현행 점수)** 를 완료하고 개선 범위를 합의한 뒤 시안/적용으로 넘어간다. (단일 화면만 고쳐 나머지와 어긋나는 로컬 최적화 방지.)
+- SKILL.md Case B 라우팅과 `commands/dara-extract.md` 상단에 게이트·3대 산출물 명시.
+
 ## [1.0.1] - 2026
 
 ### 문서
