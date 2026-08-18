@@ -128,6 +128,23 @@ description: 디자인 시스템 자산화 + 화면 설계·개선·퍼블리싱
 - **Case B**: `commands/dara-extract.md` 실행 → 인벤토리 리포트 → 정규화 제안 → Skill 자산화 → (범위 ②③이면) `commands/dara-plan-review.md` → 개선 → 신규 화면은 Case C 경로로 전환. *(범위 ②③에서 **의도적 리스타일/리브랜딩**이면 `style-gallery.html`로 목표 방향을 먼저 고를 수 있다 — 단 기본은 추출 우선, 기존 코드에서 방향 도출.)*
 - **Case C**: 서비스 디자인 시스템 Skill 로드 (없으면 기존 가이드를 템플릿 포맷으로 1회 변환) → `commands/dara-plan-review.md` → `commands/dara-build.md` → `commands/dara-review.md` → `commands/dara-learn.md`
 
+## STEP 4 — 툴 선택 & 전환 시점 (Cowork ↔ Claude Code)
+
+DARA는 두 툴에서 같은 스킬로 동작한다. **원칙: 눈으로 고르고 시안 만드는 단계 = Cowork, 실제 코드를 만지고 커밋하는 단계 = Claude Code.** 세션은 이어지지 않지만 **결정이 파일에 남아** 이어진다 — 핸드오프의 단일 진실의 원천은 **`tokens.md`**(+ 디자인 시스템 Skill, 목업 파일).
+
+| Case | 주 사용 툴 | Cowork로 넘어가는 시점 |
+|---|---|---|
+| **A 신규** | **Cowork**(인테이크·갤러리·목업·토큰) → 확정 후 **Code**(앱 구현) | 처음부터 Cowork |
+| **B 레거시** | **Code**(추출·오버레이 적용·커밋) | **의도적 리스타일/리브랜딩**일 때만 "방향 결정" 구간 |
+| **C 시스템+신규** | **Code**(구현·커밋) | 별도 시안 비교가 필요할 때만 목업 |
+
+**전환 규칙 (사용자가 헷갈리지 않게 네가 안내한다):**
+- 기존 룩 유지 + 정리/비일관성 수정만이면 → **툴 전환 없이 Code만.** (새 비주얼 방향을 잡을 때만 Cowork로 잠깐)
+- Cowork 산출물(`tokens.md`·목업)은 **반드시 대상 레포 폴더에 저장**해야 Code가 이어받는다. 개인/에이전트 폴더에 남기지 않는다.
+- 시안 확정 후 되돌아오기: Cowork에서 정한 방향 → `tokens.md` 갱신 → **Code에서 `commands/dara-apply-legacy.md`(B)/`dara-build.md`(A·C)로 실파일 적용 → 검증 → 커밋.**
+- 세션 기억은 자동 동기화되지 않는다. 방향이 바뀌면 **`tokens.md`부터 갱신**해 충돌을 막는다.
+- **네(에이전트)가 먼저 제안하라:** 시각적 방향 결정이 필요한 순간 "이 단계는 Cowork에서 갤러리로 고르는 게 낫습니다", 코드 적용 순간 "여기부터 Claude Code(+IntelliJ diff)로 넘어가면 됩니다"라고 전환 시점을 짚어준다.
+
 ## 공통 규칙
 
 - **시안 승인 전에는 실제 코드를 수정하지 마라.** 시각 작업은 벤치마크 → 시안 2~3개 비교 → 사용자 선택 → 구현 순서를 지킨다 (`commands/dara-build.md` Phase 0~2).

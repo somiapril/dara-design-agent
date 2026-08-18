@@ -2,6 +2,12 @@
 
 본 프로젝트는 [Semantic Versioning](https://semver.org/lang/ko/)을 따릅니다.
 
+## [1.0.1] - 2026
+
+### 문서
+- SKILL.md에 **STEP 4 — 툴 선택 & 전환 시점(Cowork ↔ Claude Code)** 추가. 케이스별 주 사용 툴, Cowork로 넘어가는 시점, `tokens.md` 기준 핸드오프 규칙 명시.
+- README에 "어느 툴로?" 섹션 추가.
+
 ## [1.0.0] - 2026
 
 ### 첫 정식 릴리즈
